@@ -30,7 +30,14 @@ const LOADING_LINES = [
 const MAX_CALORIES = 800; // gauge ceiling, kcal per serving
 const MAX_PROTEIN = 50; // gauge ceiling, grams per serving
 
-const PALETTE_SIZE = 5; // keep in sync with the chip-N / card-N color classes in App.css
+// Small pictograms rendered grayscale so they read as line-icon accents, not color noise.
+function Emoji({ children }) {
+  return (
+    <span className="emoji" aria-hidden="true">
+      {children}
+    </span>
+  );
+}
 
 export default function App() {
   const [imagePreview, setImagePreview] = useState(null);
@@ -171,139 +178,143 @@ Suggest 3 simple recipes using mostly what you can see. Keep recipe names short 
       <div className="bg-blobs" aria-hidden="true">
         <span className="blob blob-a" style={{ "--depth": 1 }} />
         <span className="blob blob-b" style={{ "--depth": 1.6 }} />
-        <span className="blob blob-c" style={{ "--depth": 0.8 }} />
-        <span className="blob blob-d" style={{ "--depth": 1.3 }} />
+        <span className="dot-grid" />
       </div>
 
       <div className="top-bar">
-        <span className="top-bar-icon">🍳</span>
+        <Emoji>🍳</Emoji>
         <span className="top-bar-title">Fridge → Plate</span>
       </div>
 
       <div className="app">
         <header className="app-header">
-          <h1>
-            🍳 <span className="title-gradient">Fridge → Plate</span>
-          </h1>
+          <h1>Fridge → Plate</h1>
           <p className="tagline">Snap it. Scan it. Cook it.</p>
           <p className="quote">"{quote}"</p>
         </header>
 
         <label className={`upload-zone${loading ? " is-loading" : ""}`}>
-        <input type="file" accept="image/*" onChange={handleUpload} disabled={loading} hidden />
-        {imagePreview ? (
-          <div className="scan-wrapper">
-            <img src={imagePreview} alt="your food" className="preview-img" />
-            {loading && <div className="scan-line" />}
-          </div>
-        ) : (
-          <div className="upload-placeholder">
-            <span className="upload-icon">📸</span>
-            <span>Tap to snap or upload your fridge</span>
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={loading} hidden />
+          {imagePreview ? (
+            <div className="scan-wrapper">
+              <img src={imagePreview} alt="your food" className="preview-img" />
+              {loading && <div className="scan-line" />}
+            </div>
+          ) : (
+            <div className="upload-placeholder">
+              <span className="upload-icon">
+                <Emoji>📸</Emoji>
+              </span>
+              <span>Tap to snap or upload your fridge</span>
+            </div>
+          )}
+        </label>
+
+        {result && !loading && (
+          <button className="btn-solid" onClick={reset}>
+            Start over
+          </button>
+        )}
+
+        {loading && (
+          <div className="pan-loader">
+            <div className="pan-scene">
+              <div className="steam">
+                <span />
+                <span />
+                <span />
+              </div>
+              <span className="pan-food">
+                <Emoji>🍳</Emoji>
+              </span>
+            </div>
+            <p className="loading-line">{loadingLine}</p>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
+            </div>
           </div>
         )}
-      </label>
 
-      {result && !loading && (
-        <button className="btn-ghost" onClick={reset}>
-          🔄 Start over
-        </button>
-      )}
+        {error && <p className="error-box">{error}</p>}
 
-      {loading && (
-        <div className="pan-loader">
-          <div className="pan-scene">
-            <div className="steam">
-              <span />
-              <span />
-              <span />
-            </div>
-            <span className="pan-food">🍳</span>
-          </div>
-          <p className="loading-line">{loadingLine}</p>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
-          </div>
-        </div>
-      )}
+        {result && (
+          <div className="results">
+            {result.ingredients.length === 0 && (
+              <p className="empty-box">Hmm, couldn't spot much food there. Try a clearer photo of your ingredients!</p>
+            )}
 
-      {error && <p className="error-box">⚠️ {error}</p>}
+            {result.ingredients.length > 0 && (
+              <section>
+                <h2>Spotted in your fridge ({result.ingredients.length})</h2>
+                <div className="chip-row">
+                  {result.ingredients.map((item, i) => (
+                    <span key={i} className="chip">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
 
-      {result && (
-        <div className="results">
-          {result.ingredients.length === 0 && (
-            <p className="empty-box">🤔 Hmm, couldn't spot much food there. Try a clearer photo of your ingredients!</p>
-          )}
+            {result.recipes.length > 0 && (
+              <section>
+                <h2>Your recipe lineup</h2>
+                <div className="recipe-grid">
+                  {result.recipes.map((recipe, i) => {
+                    const cal = recipe.calories ?? 0;
+                    const protein = recipe.protein ?? 0;
+                    return (
+                      <div key={i} className="recipe-card">
+                        <div className="recipe-head">
+                          <h3>{recipe.name}</h3>
+                          <button
+                            className={`copy-btn${copiedIndex === i ? " is-copied" : ""}`}
+                            onClick={() => copyRecipe(recipe, i)}
+                          >
+                            {copiedIndex === i ? "Copied ✓" : "Copy"}
+                          </button>
+                        </div>
 
-          {result.ingredients.length > 0 && (
-            <section>
-              <h2>🥕 Spotted in your fridge ({result.ingredients.length})</h2>
-              <div className="chip-row">
-                {result.ingredients.map((item, i) => (
-                  <span key={i} className={`chip chip-${i % PALETTE_SIZE}`}>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {result.recipes.length > 0 && (
-            <section>
-              <h2>👨‍🍳 Your recipe lineup</h2>
-              <div className="recipe-grid">
-                {result.recipes.map((recipe, i) => {
-                  const cal = recipe.calories ?? 0;
-                  const protein = recipe.protein ?? 0;
-                  return (
-                    <div key={i} className={`recipe-card card-${i % PALETTE_SIZE}`}>
-                      <div className="recipe-head">
-                        <h3>{recipe.name}</h3>
-                        <button className="copy-btn" onClick={() => copyRecipe(recipe, i)}>
-                          {copiedIndex === i ? "✅ Copied" : "📋 Copy"}
-                        </button>
-                      </div>
-
-                      <div className="gauges">
-                        <div className="gauge">
-                          <div className="gauge-label">
-                            <span>🔥 Calories</span>
-                            <span>{cal} kcal</span>
+                        <div className="gauges">
+                          <div className="gauge">
+                            <div className="gauge-label">
+                              <span>Calories</span>
+                              <span>{cal} kcal</span>
+                            </div>
+                            <div className="gauge-track">
+                              <div
+                                className="gauge-fill cal"
+                                style={{ width: `${Math.min((cal / MAX_CALORIES) * 100, 100)}%` }}
+                              />
+                            </div>
                           </div>
-                          <div className="gauge-track">
-                            <div
-                              className="gauge-fill cal"
-                              style={{ width: `${Math.min((cal / MAX_CALORIES) * 100, 100)}%` }}
-                            />
+                          <div className="gauge">
+                            <div className="gauge-label">
+                              <span>Protein</span>
+                              <span>{protein} g</span>
+                            </div>
+                            <div className="gauge-track">
+                              <div
+                                className="gauge-fill protein"
+                                style={{ width: `${Math.min((protein / MAX_PROTEIN) * 100, 100)}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
-                        <div className="gauge">
-                          <div className="gauge-label">
-                            <span>💪 Protein</span>
-                            <span>{protein} g</span>
-                          </div>
-                          <div className="gauge-track">
-                            <div
-                              className="gauge-fill protein"
-                              style={{ width: `${Math.min((protein / MAX_PROTEIN) * 100, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
 
-                      <ol className="steps">
-                        {recipe.steps.map((step, j) => (
-                          <li key={j}>{step}</li>
-                        ))}
-                      </ol>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-        </div>
-      )}
+                        <ol className="steps">
+                          {recipe.steps.map((step, j) => (
+                            <li key={j}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
