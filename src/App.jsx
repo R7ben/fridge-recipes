@@ -30,6 +30,8 @@ const LOADING_LINES = [
 const MAX_CALORIES = 800; // gauge ceiling, kcal per serving
 const MAX_PROTEIN = 50; // gauge ceiling, grams per serving
 
+const PALETTE_SIZE = 5; // keep in sync with the chip-N / card-N color classes in App.css
+
 export default function App() {
   const [imagePreview, setImagePreview] = useState(null);
   const [result, setResult] = useState(null); // holds a structured object
@@ -56,6 +58,32 @@ export default function App() {
       clearInterval(lineTimer);
     };
   }, [loading]);
+
+  // Live background: blobs drift with the mouse and shift depth as you scroll.
+  useEffect(() => {
+    const root = document.documentElement;
+    let raf = null;
+
+    function applyScroll() {
+      root.style.setProperty("--scroll-y", window.scrollY.toFixed(1));
+      raf = null;
+    }
+    function onScroll() {
+      if (raf === null) raf = requestAnimationFrame(applyScroll);
+    }
+    function onMove(e) {
+      root.style.setProperty("--mouse-x", ((e.clientX / window.innerWidth - 0.5) * 2).toFixed(3));
+      root.style.setProperty("--mouse-y", ((e.clientY / window.innerHeight - 0.5) * 2).toFixed(3));
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("mousemove", onMove);
+      if (raf !== null) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -139,14 +167,29 @@ Suggest 3 simple recipes using mostly what you can see. Keep recipe names short 
   }
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>🍳 Fridge → Plate</h1>
-        <p className="tagline">Snap it. Scan it. Cook it.</p>
-        <p className="quote">"{quote}"</p>
-      </header>
+    <>
+      <div className="bg-blobs" aria-hidden="true">
+        <span className="blob blob-a" style={{ "--depth": 1 }} />
+        <span className="blob blob-b" style={{ "--depth": 1.6 }} />
+        <span className="blob blob-c" style={{ "--depth": 0.8 }} />
+        <span className="blob blob-d" style={{ "--depth": 1.3 }} />
+      </div>
 
-      <label className={`upload-zone${loading ? " is-loading" : ""}`}>
+      <div className="top-bar">
+        <span className="top-bar-icon">🍳</span>
+        <span className="top-bar-title">Fridge → Plate</span>
+      </div>
+
+      <div className="app">
+        <header className="app-header">
+          <h1>
+            🍳 <span className="title-gradient">Fridge → Plate</span>
+          </h1>
+          <p className="tagline">Snap it. Scan it. Cook it.</p>
+          <p className="quote">"{quote}"</p>
+        </header>
+
+        <label className={`upload-zone${loading ? " is-loading" : ""}`}>
         <input type="file" accept="image/*" onChange={handleUpload} disabled={loading} hidden />
         {imagePreview ? (
           <div className="scan-wrapper">
@@ -197,7 +240,7 @@ Suggest 3 simple recipes using mostly what you can see. Keep recipe names short 
               <h2>🥕 Spotted in your fridge ({result.ingredients.length})</h2>
               <div className="chip-row">
                 {result.ingredients.map((item, i) => (
-                  <span key={i} className="chip">
+                  <span key={i} className={`chip chip-${i % PALETTE_SIZE}`}>
                     {item}
                   </span>
                 ))}
@@ -213,7 +256,7 @@ Suggest 3 simple recipes using mostly what you can see. Keep recipe names short 
                   const cal = recipe.calories ?? 0;
                   const protein = recipe.protein ?? 0;
                   return (
-                    <div key={i} className="recipe-card">
+                    <div key={i} className={`recipe-card card-${i % PALETTE_SIZE}`}>
                       <div className="recipe-head">
                         <h3>{recipe.name}</h3>
                         <button className="copy-btn" onClick={() => copyRecipe(recipe, i)}>
@@ -261,6 +304,7 @@ Suggest 3 simple recipes using mostly what you can see. Keep recipe names short 
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
