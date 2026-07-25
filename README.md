@@ -1,16 +1,97 @@
-# React + Vite
+# 🍳 Fridge → Recipes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Snap a photo of your ingredients and get instant AI-powered recipe ideas.**
 
-Currently, two official plugins are available:
+> Built in [24 hours] at [Hackathon Name].
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+🔗 **Live demo:** [your-app.vercel.app](https://your-app.vercel.app)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📸 Demo
 
-## Expanding the ESLint configuration
+<!-- Drag a screenshot or GIF into your GitHub README editor, or use: -->
+![App demo](demo.gif)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+*Upload a photo → the app detects your ingredients → it suggests 3 simple recipes.*
+
+---
+
+## 💡 The problem
+
+People stare into a full fridge and still don't know what to cook, then food goes to waste. **Fridge → Recipes** turns whatever you already have into meal ideas in seconds — no typing, just a photo.
+
+---
+
+## ✨ Features
+
+- 📷 **Photo-to-ingredients** — upload a fridge/pantry photo and AI vision detects what's inside
+- 👨‍🍳 **Instant recipes** — get 3 simple recipe suggestions using those ingredients
+- ⚡ **Fast & clean UI** — ingredient chips, recipe cards, loading states
+- 🛟 **Handles edge cases** — friendly message when no food is detected, plus a "start over" reset
+
+---
+
+## 🛠️ Tech stack
+
+| Layer | Tool |
+|---|---|
+| Frontend | React (Vite) |
+| AI vision | Google Gemini API (multimodal) |
+| Deployment | Vercel |
+| Version control | Git + GitHub |
+
+---
+
+## 🧠 How it works
+
+1. The user uploads a photo, which is converted to base64.
+2. The image + a structured prompt are sent to the Gemini API.
+3. The AI returns clean JSON (ingredients + recipes) using a forced JSON response format.
+4. React renders the results as ingredient chips and recipe cards.
+
+---
+
+## 🚀 Run it locally
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/YOUR_USERNAME/fridge-recipes.git
+cd fridge-recipes
+
+# 2. Install dependencies
+npm install
+
+# 3. Add your API key
+# Create a .env file with:
+# VITE_GEMINI_API_KEY=your_key_here
+
+# 4. Start the dev server
+npm run dev
+```
+
+Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com).
+
+---
+
+## 📚 What I learned
+
+- Calling a multimodal (vision) AI API and handling image data in the browser
+- Forcing structured JSON output from an LLM for reliable UI rendering
+- Real-world debugging: rate limits (429), model versioning (404), and reading live API docs
+- Deploying a React app with environment variables on Vercel
+
+---
+
+## 🔮 What I'd build next
+
+- 💾 Save meal history with Firebase
+- 🥗 Dietary filters (vegetarian, gluten-free)
+- ✏️ Manually add or remove detected ingredients
+- 🛒 Auto-generate a shopping list for missing items
+
+---
+
+## 👤 Author
+
+**[Your Name]** — [LinkedIn](https://linkedin.com/in/you) · [GitHub](https://github.com/YOUR_USERNAME)
