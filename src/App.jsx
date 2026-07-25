@@ -175,22 +175,24 @@ Suggest 3 simple recipes using mostly what you can see. Keep recipe names short 
 
   return (
     <>
-      <div className="bg-blobs" aria-hidden="true">
-        <span className="blob blob-a" style={{ "--depth": 1 }} />
-        <span className="blob blob-b" style={{ "--depth": 1.6 }} />
+      <div className="bg-food" aria-hidden="true">
         <span className="dot-grid" />
+        <img src="/food-wheel.png" alt="" className="food-wheel food-wheel-top" />
+        <img src="/food-ring.png" alt="" className="food-wheel food-wheel-bottom" />
       </div>
 
       <div className="top-bar">
-        <Emoji>🍳</Emoji>
-        <span className="top-bar-title">Fridge → Plate</span>
+        <span className="top-bar-mark">F→P</span>
+        <span className="top-bar-title">Fridge to Plate</span>
       </div>
 
       <div className="app">
         <header className="app-header">
-          <h1>Fridge → Plate</h1>
+          <h1>
+            Fridge <em>to</em> Plate
+          </h1>
           <p className="tagline">Snap it. Scan it. Cook it.</p>
-          <p className="quote">"{quote}"</p>
+          <p className="quote">{`"${quote}"`}</p>
         </header>
 
         <label className={`upload-zone${loading ? " is-loading" : ""}`}>
