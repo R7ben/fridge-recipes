@@ -1,13 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import "./App.css";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const MODEL = "gemini-flash-latest"; // if this errors, use the ListModels trick to find a live one
 
+const QUOTES = [
+  "Abs are made in the kitchen. So is garlic bread.",
+  "Protein first, regrets later.",
+  "A recipe a day keeps the takeout app away.",
+  "Track your macros, not your excuses.",
+  "Cooking is cheaper than a gym membership — and tastier.",
+  "Your fridge called. It has ideas.",
+  "Calories count, but flavor counts more.",
+  "Meal prep now, thank yourself later.",
+  "Real chefs check the fridge before the recipe.",
+  "Fitness goals start with what's actually in your kitchen.",
+  "Gains are made one sad, wilted vegetable at a time.",
+  "Eat like your future self is watching.",
+];
+
+const LOADING_LINES = [
+  "Peeking into your fridge...",
+  "Chopping virtual veggies...",
+  "Simmering some ideas...",
+  "Tasting for seasoning...",
+  "Plating your recipes...",
+];
+
+const MAX_CALORIES = 800; // gauge ceiling, kcal per serving
+const MAX_PROTEIN = 50; // gauge ceiling, grams per serving
+
 export default function App() {
   const [imagePreview, setImagePreview] = useState(null);
-  const [result, setResult] = useState(null); // now holds a structured object, not text
+  const [result, setResult] = useState(null); // holds a structured object
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [loadingLine, setLoadingLine] = useState(LOADING_LINES[0]);
+  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+
+  // Fake-but-satisfying progress bar + cycling status line while we wait on the API.
+  useEffect(() => {
+    if (!loading) return;
+    let lineIdx = 0;
+    const progressTimer = setInterval(() => {
+      setProgress((p) => (p < 92 ? p + Math.random() * 10 : p));
+    }, 350);
+    const lineTimer = setInterval(() => {
+      lineIdx = (lineIdx + 1) % LOADING_LINES.length;
+      setLoadingLine(LOADING_LINES[lineIdx]);
+    }, 1400);
+    return () => {
+      clearInterval(progressTimer);
+      clearInterval(lineTimer);
+    };
+  }, [loading]);
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -26,20 +74,22 @@ export default function App() {
     setLoading(true);
     setError("");
     setResult(null);
+    setProgress(4);
+    setLoadingLine(LOADING_LINES[0]);
 
     try {
       const base64 = await fileToBase64(file);
 
-      // Ask for JSON in an exact shape so it's easy to display
-      const prompt = `You are a kitchen assistant. Look at this photo of food or ingredients.
+      const prompt = `You are a fun, upbeat kitchen assistant. Look at this photo of food or ingredients.
 Return ONLY valid JSON in exactly this shape:
 {
   "ingredients": ["item1", "item2"],
   "recipes": [
-    { "name": "Recipe name", "steps": ["step 1", "step 2", "step 3"] }
+    { "name": "Recipe name", "steps": ["step 1", "step 2", "step 3"], "calories": 450, "protein": 28 }
   ]
 }
-Suggest 3 simple recipes using mostly what you can see.`;
+"calories" is an estimated number of kcal per serving (integer). "protein" is estimated grams of protein per serving (integer).
+Suggest 3 simple recipes using mostly what you can see. Keep recipe names short and punchy.`;
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
@@ -50,7 +100,7 @@ Suggest 3 simple recipes using mostly what you can see.`;
             contents: [
               { parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64 } }] },
             ],
-            generationConfig: { responseMimeType: "application/json" }, // forces clean JSON
+            generationConfig: { responseMimeType: "application/json" },
           }),
         }
       );
@@ -64,7 +114,8 @@ Suggest 3 simple recipes using mostly what you can see.`;
       }
 
       const text = data.candidates[0].content.parts[0].text;
-      setResult(JSON.parse(text)); // turn JSON text into a real object
+      setResult(JSON.parse(text));
+      setProgress(100);
     } catch (err) {
       console.error(err);
       setError("Something went wrong — check the console (F12).");
@@ -73,42 +124,141 @@ Suggest 3 simple recipes using mostly what you can see.`;
     }
   }
 
+  function copyRecipe(recipe, i) {
+    const text = `${recipe.name}\n${recipe.steps.map((s, idx) => `${idx + 1}. ${s}`).join("\n")}`;
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(i);
+    setTimeout(() => setCopiedIndex((cur) => (cur === i ? null : cur)), 1500);
+  }
+
+  function reset() {
+    setResult(null);
+    setImagePreview(null);
+    setError("");
+    setProgress(0);
+  }
+
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: 24, fontFamily: "system-ui, sans-serif" }}>
-      <h1 style={{ marginBottom: 4 }}>🍳 Fridge → Recipes</h1>
-      <p style={{ color: "#666", marginTop: 0 }}>Snap your ingredients, get recipe ideas.</p>
+    <div className="app">
+      <header className="app-header">
+        <h1>🍳 Fridge → Plate</h1>
+        <p className="tagline">Snap it. Scan it. Cook it.</p>
+        <p className="quote">"{quote}"</p>
+      </header>
 
-      <input type="file" accept="image/*" onChange={handleUpload} />
+      <label className={`upload-zone${loading ? " is-loading" : ""}`}>
+        <input type="file" accept="image/*" onChange={handleUpload} disabled={loading} hidden />
+        {imagePreview ? (
+          <div className="scan-wrapper">
+            <img src={imagePreview} alt="your food" className="preview-img" />
+            {loading && <div className="scan-line" />}
+          </div>
+        ) : (
+          <div className="upload-placeholder">
+            <span className="upload-icon">📸</span>
+            <span>Tap to snap or upload your fridge</span>
+          </div>
+        )}
+      </label>
 
-      {imagePreview && (
-        <img src={imagePreview} alt="your food" style={{ width: "100%", borderRadius: 16, marginTop: 16 }} />
+      {result && !loading && (
+        <button className="btn-ghost" onClick={reset}>
+          🔄 Start over
+        </button>
       )}
 
-      {loading && <p>🔍 Looking at your food...</p>}
-      {error && <p style={{ color: "#c0392b" }}>{error}</p>}
+      {loading && (
+        <div className="pan-loader">
+          <div className="pan-scene">
+            <div className="steam">
+              <span />
+              <span />
+              <span />
+            </div>
+            <span className="pan-food">🍳</span>
+          </div>
+          <p className="loading-line">{loadingLine}</p>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
+          </div>
+        </div>
+      )}
+
+      {error && <p className="error-box">⚠️ {error}</p>}
 
       {result && (
-        <div style={{ marginTop: 20 }}>
-          <h2>🥕 Ingredients spotted</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {result.ingredients.map((item, i) => (
-              <span key={i} style={{ background: "#eafaf1", color: "#1e7e46", padding: "6px 12px", borderRadius: 999, fontSize: 14 }}>
-                {item}
-              </span>
-            ))}
-          </div>
+        <div className="results">
+          {result.ingredients.length === 0 && (
+            <p className="empty-box">🤔 Hmm, couldn't spot much food there. Try a clearer photo of your ingredients!</p>
+          )}
 
-          <h2 style={{ marginTop: 24 }}>👨‍🍳 Recipe ideas</h2>
-          {result.recipes.map((recipe, i) => (
-            <div key={i} style={{ border: "1px solid #eee", borderRadius: 16, padding: 16, marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-              <h3 style={{ marginTop: 0 }}>{recipe.name}</h3>
-              <ol style={{ margin: 0, paddingLeft: 20 }}>
-                {recipe.steps.map((step, j) => (
-                  <li key={j} style={{ marginBottom: 4 }}>{step}</li>
+          {result.ingredients.length > 0 && (
+            <section>
+              <h2>🥕 Spotted in your fridge ({result.ingredients.length})</h2>
+              <div className="chip-row">
+                {result.ingredients.map((item, i) => (
+                  <span key={i} className="chip">
+                    {item}
+                  </span>
                 ))}
-              </ol>
-            </div>
-          ))}
+              </div>
+            </section>
+          )}
+
+          {result.recipes.length > 0 && (
+            <section>
+              <h2>👨‍🍳 Your recipe lineup</h2>
+              <div className="recipe-grid">
+                {result.recipes.map((recipe, i) => {
+                  const cal = recipe.calories ?? 0;
+                  const protein = recipe.protein ?? 0;
+                  return (
+                    <div key={i} className="recipe-card">
+                      <div className="recipe-head">
+                        <h3>{recipe.name}</h3>
+                        <button className="copy-btn" onClick={() => copyRecipe(recipe, i)}>
+                          {copiedIndex === i ? "✅ Copied" : "📋 Copy"}
+                        </button>
+                      </div>
+
+                      <div className="gauges">
+                        <div className="gauge">
+                          <div className="gauge-label">
+                            <span>🔥 Calories</span>
+                            <span>{cal} kcal</span>
+                          </div>
+                          <div className="gauge-track">
+                            <div
+                              className="gauge-fill cal"
+                              style={{ width: `${Math.min((cal / MAX_CALORIES) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                        <div className="gauge">
+                          <div className="gauge-label">
+                            <span>💪 Protein</span>
+                            <span>{protein} g</span>
+                          </div>
+                          <div className="gauge-track">
+                            <div
+                              className="gauge-fill protein"
+                              style={{ width: `${Math.min((protein / MAX_PROTEIN) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <ol className="steps">
+                        {recipe.steps.map((step, j) => (
+                          <li key={j}>{step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
         </div>
       )}
     </div>
