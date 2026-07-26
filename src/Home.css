@@ -1,0 +1,79 @@
+.intro-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: #fff;
+  /* Keep the fridge readable behind the text without fully hiding it. */
+  background: linear-gradient(
+    180deg,
+    rgba(10, 12, 16, 0.55) 0%,
+    rgba(10, 12, 16, 0.25) 40%,
+    rgba(10, 12, 16, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+.intro-eyebrow {
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.intro-title {
+  margin: 0;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-wrap: balance;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+}
+
+.intro-lede {
+  margin: 0;
+  max-width: 34ch;
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  text-wrap: pretty;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
+}
+
+.intro-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  transition: opacity 0.4s ease;
+}
+
+.intro-arrow {
+  width: 22px;
+  height: 22px;
+  border-right: 2px solid rgba(255, 255, 255, 0.85);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.85);
+  transform: rotate(45deg);
+  animation: intro-bob 1.5s ease-in-out infinite;
+}
+
+@keyframes intro-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(45deg);
+  }
+  50% {
+    transform: translateY(6px) rotate(45deg);
+  }
+}
