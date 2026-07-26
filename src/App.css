@@ -144,11 +144,13 @@
 }
 
 .top-bar-title {
-  font-family: var(--display);
+  font-family: "Poppins", sans-serif;
   font-weight: 600;
   font-size: 17px;
   letter-spacing: -0.2px;
   color: var(--ink);
+  text-align: center;
+  flex: 1;
 }
 
 /* ---------- Header ---------- */
