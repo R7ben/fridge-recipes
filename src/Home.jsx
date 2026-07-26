@@ -12,22 +12,13 @@ const FRAMES = Array.from(
 export default function Home() {
   return (
     <>
-      {/* Page-wide animated background (lifted from the recipe app) so the
-          rotating food-wheel sits behind the whole page, including the
-          fridge intro sequence. */}
-      <div className="bg-food" aria-hidden="true">
-        <span className="dot-grid" />
-        <img src="/food-wheel.png" alt="" className="food-wheel food-wheel-top" />
-        <img src="/food-ring.png" alt="" className="food-wheel food-wheel-bottom" />
-      </div>
-
       {/* Cinematic scroll-driven intro. It pins while you scroll through the
           frames, then releases into the recipe app below. */}
       <ScrollCanvasSequence
         frames={FRAMES}
         aspectRatio={16 / 9}
         scrollLength={3}
-        fit="contain"
+        fit="cover"
       >
         {(progress) => (
           <div className="intro-overlay">

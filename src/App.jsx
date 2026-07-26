@@ -175,9 +175,12 @@ Suggest 3 simple recipes using mostly what you can see. Keep recipe names short 
 
   return (
     <>
-      {/* The rotating food-wheel background now lives in Home so it spans the
-          whole page (behind the fridge intro too). The scroll/mouse effect
-          above still drives its rotation via CSS variables on :root. */}
+      <div className="bg-food" aria-hidden="true">
+        <span className="dot-grid" />
+        <img src="/food-wheel.png" alt="" className="food-wheel food-wheel-top" />
+        <img src="/food-ring.png" alt="" className="food-wheel food-wheel-bottom" />
+      </div>
+
       <div className="top-bar">
         <span className="top-bar-mark">F→P</span>
         <span className="top-bar-title">Fridge to Plate</span>
