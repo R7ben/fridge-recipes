@@ -1,0 +1,150 @@
+.demo {
+  --ink: #0a0a0b;
+  --paper: #f4f4f5;
+  --muted: #71717a;
+  --accent: #16a34a;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* ---- Hero ---- */
+.demo-hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+  padding: 24px;
+}
+
+.demo-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.demo-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 1.05;
+  margin: 0;
+  max-width: 14ch;
+  text-wrap: balance;
+}
+
+.demo-lede {
+  max-width: 46ch;
+  margin: 0;
+  font-size: clamp(1rem, 2.4vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.demo-scroll-cue {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.demo-arrow {
+  width: 1px;
+  height: 44px;
+  background: currentColor;
+  position: relative;
+  animation: demo-bounce 1.8s ease-in-out infinite;
+}
+
+.demo-arrow::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translate(-50%, 2px) rotate(45deg);
+}
+
+@keyframes demo-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+/* ---- Overlay pinned over the canvas ---- */
+.demo-overlay-inner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: clamp(20px, 5vw, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(to top, rgba(10, 10, 11, 0.7), transparent);
+}
+
+.demo-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #0a0a0b;
+  background: #f4f4f5;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.demo-overlay-title {
+  font-family: "Fraunces", Georgia, serif;
+  color: #f4f4f5;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  margin: 0;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Outro ---- */
+.demo-outro {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.demo-outro h2 {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  margin: 0;
+}
+
+.demo-outro p {
+  max-width: 52ch;
+  margin: 0;
+  font-size: clamp(1rem, 2.2vw, 1.15rem);
+  line-height: 1.65;
+  color: var(--muted);
+  text-wrap: pretty;
+}
