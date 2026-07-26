@@ -178,9 +178,22 @@ export default function ScrollCanvasSequence({
     resizeCanvas();
     const canvas = canvasRef.current;
     if (!canvas || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => resizeCanvas());
+    // Defer the resize into a rAF so the canvas mutation happens outside the
+    // observer's delivery cycle. This avoids the benign but noisy
+    // "ResizeObserver loop completed with undelivered notifications" error.
+    let roRaf = null;
+    const ro = new ResizeObserver(() => {
+      if (roRaf !== null) return;
+      roRaf = requestAnimationFrame(() => {
+        roRaf = null;
+        resizeCanvas();
+      });
+    });
     ro.observe(canvas);
-    return () => ro.disconnect();
+    return () => {
+      if (roRaf !== null) cancelAnimationFrame(roRaf);
+      ro.disconnect();
+    };
   }, [resizeCanvas]);
 
   const loadPct = total > 0 ? Math.round((loadedCount / total) * 100) : 0;
