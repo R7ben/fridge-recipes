@@ -94,4 +94,4 @@ Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com).
 
 ## 👤 Author
 
-**[Your Name]** — [LinkedIn](https://linkedin.com/in/you) · [GitHub](https://github.com/YOUR_USERNAME)
+**[Ruben]**  · [GitHub](https://github.com/R7ben)
